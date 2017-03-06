@@ -20,63 +20,56 @@ const maxCoins = 100;
 const coinsPer = 3;
 const coins = [];
 
-function coin(x, y, radius) {
-	this.x = x;
-	this.y = y;
-	this.radius = radius;
-	this.visible = true;
+function Coin(x, y, radius) {
+  this.x = x;
+  this.y = y;
+  this.radius = radius;
+  this.visible = true;
 }
 
 const createCoins = () => {
-	for (var i = 0; i < coinsPer; i++)
-	{
-		if (coins.length <= maxCoins)
-		{
-			let x = Math.floor(Math.random()*(1280-10) + 10);
-			let y = Math.floor(Math.random()*(720-10) + 10);
-			var tempCoin = new coin(x, y, 20);
-			coins.push(tempCoin);
-		}
-	}
-	io.sockets.in('room1').emit('updateCoins', { coins: coins });
-}
+  for (let i = 0; i < coinsPer; i++) {
+    if (coins.length <= maxCoins) {
+      const x = Math.floor((Math.random() * (1280 - 10)) + 10);
+      const y = Math.floor((Math.random() * (720 - 10)) + 10);
+      const tempCoin = new Coin(x, y, 20);
+      coins.push(tempCoin);
+    }
+  }
+  io.sockets.in('room1').emit('updateCoins', { coins });
+};
 
 const checkCoins = (data) => {
-	
-	let coinChanged = false;
-	
-	for (var i = 0; i < coins.length; i++)
-	{
-		if (coins[i].visible)
-		{
-			var a = coins[i].x - (data.coords.x + (data.coords.width/2));
-			var b = coins[i].y - (data.coords.y + (data.coords.height/2));
-			
-			var c = Math.sqrt(a * a + b * b);
-			
-			if (c < coins[i].radius + (data.coords.width/2))
-			{
-				coinChanged = true;
-				coins[i].visible = false;
-			}
-		}
-	}
-	
-	if (coinChanged)
-	{
-		io.sockets.in('room1').emit('updateCoins', { coins: coins });
-	}
-}
+  let coinChanged = false;
+
+  for (let i = 0; i < coins.length; i++) {
+    if (coins[i].visible) {
+      const a = coins[i].x - (data.coords.x + (data.coords.width / 2));
+      const b = coins[i].y - (data.coords.y + (data.coords.height / 2));
+
+      const c = Math.sqrt((a * a) + (b * b));
+
+      if (c < coins[i].radius + (data.coords.width / 2)) {
+        coinChanged = true;
+        coins[i].visible = false;
+      }
+    }
+  }
+
+  if (coinChanged) {
+    io.sockets.in('room1').emit('updateCoins', { coins });
+  }
+};
 
 const onJoined = (sock) => {
   const socket = sock;
   socket.on('join', () => {
     socket.join('room1');
-	socket.emit('updateCoins', { coins: coins });
+    socket.emit('updateCoins', { coins });
   });
 
   socket.on('draw', (data) => {
-	checkCoins(data);
+    checkCoins(data);
     io.sockets.in('room1').emit('draw', { name: data.name, coords: data.coords });
   });
 };
