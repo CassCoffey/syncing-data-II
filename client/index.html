@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+    <script type="text/babel" >
+        "use strict";
+		
+		let socket;
+		let draws = {};
+    
+		const connectSocket = (e) => {
+			socket = io.connect();
+			
+			socket.on('connect', () => {
+				console.log('connecting');
+				socket.emit('join', null);
+			});
+			
+			socket.on('updatePara', (data) => {
+				const message = data.message;
+				document.querySelector("#myPara").innerHTML = message;
+			});
+			
+			socket.on('clearPara', (data) => {
+				document.querySelector("#myPara").innerHTML = "";
+			});
+		};
+		
+		const init = () => {
+			connectSocket();
+			setInterval(sendMessage, 3000);
+		};
+		
+		const sendMessage = () => {
+			socket.emit('updatePara', null);	
+		}
+		
+		window.onload = init;
+    </script>
+</head>
+<body>
+	<p id="myPara"></p>
+</body>
+</html>
